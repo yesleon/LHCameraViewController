@@ -8,10 +8,16 @@
 
 import UIKit
 import AVFoundation
+import LHZoomTransitionKit
 
 public protocol LHCameraViewControllerDelegate: AnyObject {
     func cameraViewController(_ cameraVC: LHCameraViewController, didTakeImage image: UIImage)
     func cameraViewControllerDidCancel(_ cameraVC: LHCameraViewController)
+    func zoomTargetView(for cameraVC: LHCameraViewController) -> UIView?
+}
+
+public extension LHCameraViewControllerDelegate {
+    func zoomTargetView(for cameraVC: LHCameraViewController) -> UIView? { return nil }
 }
 
 open class LHCameraViewController: UIViewController {
@@ -19,6 +25,7 @@ open class LHCameraViewController: UIViewController {
     open weak var delegate: LHCameraViewControllerDelegate?
     @IBOutlet private weak var previewView: PreviewView!
     @IBOutlet private weak var overlayView: UIView!
+    @IBOutlet private weak var imageView: UIImageView!
     private lazy var orientationDetector: LHDeviceOrientationDetector = {
         let detector = LHDeviceOrientationDetector()
         detector.delegate = self
@@ -32,14 +39,19 @@ open class LHCameraViewController: UIViewController {
         return .portrait
     }
     
+    private func initialize() {
+        transitioningDelegate = self
+    }
+    
     public init() {
-        super.init(nibName: nil, bundle: Bundle(for: LHCameraViewController.self))
+        super.init(nibName: nil, bundle: Bundle.init(for: LHCameraViewController.self))
+        initialize()
     }
     
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        initialize()
     }
-    
     
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -137,6 +149,7 @@ extension LHCameraViewController: AVCapturePhotoCaptureDelegate {
                 image = croppedImage
             }
         }
+        imageView.image = image
         
         delegate?.cameraViewController(self, didTakeImage: image)
     }
@@ -169,6 +182,43 @@ extension LHCameraViewController: LHDeviceOrientationDetectorDelegate {
                 self.overlayView.alpha = 1
             }
         }
+    }
+    
+}
+
+extension LHCameraViewController: UIViewControllerTransitioningDelegate {
+    
+    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        if imageView.image != nil {
+            return LHZoomTransitionAnimationController(duration: 0.4, dampingRatio: 1, source: self, destination: self)
+        } else {
+            return nil
+        }
+    }
+    
+}
+
+extension LHCameraViewController: LHZoomTransitionTargetProviding {
+    
+    public func targetView(for animationController: LHZoomTransitionAnimationController, operation: LHZoomTransitionAnimationController.Operation, viewControllerKey: UITransitionContextViewControllerKey) -> UIView? {
+        switch (operation, viewControllerKey) {
+        case (.dismiss, .from):
+            return imageView
+        case (.dismiss, .to):
+            return delegate?.zoomTargetView(for: self)
+        default:
+            return nil
+        }
+    }
+    
+    public func animationController(_ animationController: LHZoomTransitionAnimationController, willAnimate operation: LHZoomTransitionAnimationController.Operation) {
+        imageView.alpha = 0
+        delegate?.zoomTargetView(for: self)?.alpha = 0
+    }
+    
+    public func animationController(_ animationController: LHZoomTransitionAnimationController, didAnimate operation: LHZoomTransitionAnimationController.Operation) {
+        imageView.alpha = 1
+        delegate?.zoomTargetView(for: self)?.alpha = 1
     }
     
 }

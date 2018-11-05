@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -13,6 +13,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="LHCameraViewController" customModule="LHCameraViewController" customModuleProvider="target">
             <connections>
                 <outlet property="cancelButton" destination="Bla-dU-LQa" id="26o-TN-PUD"/>
+                <outlet property="imageView" destination="RfU-Ml-pzu" id="IGs-om-iFt"/>
                 <outlet property="overlayView" destination="gzs-T8-Vak" id="1p3-mp-4Ia"/>
                 <outlet property="previewView" destination="w1P-Bb-rwJ" id="21e-dA-8E5"/>
                 <outlet property="shutterButton" destination="SSh-0L-Crt" id="G4J-Cl-keS"/>
@@ -35,13 +36,12 @@
                             <rect key="frame" x="0.0" y="0.0" width="375" height="228"/>
                             <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </view>
-                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Ob-un-Oao">
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="RfU-Ml-pzu">
                             <rect key="frame" x="0.0" y="228" width="375" height="211"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
-                                <constraint firstAttribute="width" secondItem="9Ob-un-Oao" secondAttribute="height" multiplier="16:9" id="ijy-YY-jZb"/>
+                                <constraint firstAttribute="width" secondItem="RfU-Ml-pzu" secondAttribute="height" multiplier="16:9" id="Nu5-z7-KtW"/>
                             </constraints>
-                        </view>
+                        </imageView>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="j02-MU-cYd">
                             <rect key="frame" x="0.0" y="439" width="375" height="228"/>
                             <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
