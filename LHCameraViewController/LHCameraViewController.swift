@@ -33,6 +33,7 @@ open class LHCameraViewController: UIViewController {
     }()
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var shutterButton: UIButton!
+    private var orientation: UIInterfaceOrientation = .unknown
     
     
     override open var supportedInterfaceOrientations: UIInterfaceOrientationMask {
@@ -61,12 +62,34 @@ open class LHCameraViewController: UIViewController {
             previewView.session = session
             session.startRunning()
         }
-        
-        orientationDetector.startDeviceOrientationUpdates()
+        previewView.videoPreviewLayer.videoGravity = .resizeAspectFill
+        previewView.clipsToBounds = true
+        if UIDevice.current.userInterfaceIdiom != .phone {
+            updateVideoOrientation()
+            NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
+        } else {
+            orientationDetector.startDeviceOrientationUpdates()
+        }
     }
     
     deinit {
-        orientationDetector.stopDeviceOrientationUpdates()
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            orientationDetector.stopDeviceOrientationUpdates()
+        } else {
+            NotificationCenter.default.removeObserver(self)
+        }
+    }
+    
+    private func updateVideoOrientation() {
+        let rawValue = UIDevice.current.orientation.rawValue
+        if rawValue >= 1, rawValue <= 4 {
+            previewView.connection?.videoOrientation = AVCaptureVideoOrientation(rawValue: rawValue)!
+        }
+    }
+    
+    @objc private func orientationDidChange() {
+        updateVideoOrientation()
+        orientation = UIInterfaceOrientation(rawValue: UIDevice.current.orientation.rawValue)!
     }
     
     @IBAction private func didPressCancelButton(_ sender: UIButton) {
@@ -114,7 +137,19 @@ extension LHCameraViewController: AVCapturePhotoCaptureDelegate {
     open func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
 
         var metadata = photo.metadata
-        let orientation = orientationDetector.currentOrientation
+//
+//        let orientation: UIInterfaceOrientation
+//        if UIDevice.current.userInterfaceIdiom == .phone {
+//            orientation = orientationDetector.currentOrientation
+//
+//        } else {
+//            let rawValue = UIDevice.current.orientation.rawValue
+//            if rawValue >= 1, rawValue <= 4 {
+//                orientation = UIInterfaceOrientation(rawValue: rawValue)!
+//            } else {
+//                orientation = .unknown
+//            }
+//        }
         switch orientation {
         case .landscapeLeft:
             metadata["Orientation"] = 3
@@ -127,6 +162,8 @@ extension LHCameraViewController: AVCapturePhotoCaptureDelegate {
         default:
             break
         }
+        
+        
         
         guard let imageData = photo.fileDataRepresentation(withReplacementMetadata: metadata,
                                                            replacementEmbeddedThumbnailPhotoFormat: photo.embeddedThumbnailPhotoFormat,
@@ -163,23 +200,26 @@ extension LHCameraViewController: LHDeviceOrientationDetectorDelegate {
     }
     
     func orientationDetector(_ detector: LHDeviceOrientationDetector, didDetectOrientationChangeFrom fromOrientation: UIInterfaceOrientation, toOrientation: UIInterfaceOrientation) {
-        UIView.animate(withDuration: 0.2) {
-            switch toOrientation {
-            case .landscapeLeft:
-                [self.cancelButton, self.shutterButton].forEach {
-                    $0.transform = CGAffineTransform(rotationAngle: .pi / -2)
+        orientation = toOrientation
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            UIView.animate(withDuration: 0.2) {
+                switch toOrientation {
+                case .landscapeLeft:
+                    [self.cancelButton, self.shutterButton].forEach {
+                        $0.transform = CGAffineTransform(rotationAngle: .pi / -2)
+                    }
+                    self.overlayView.alpha = 0
+                case .landscapeRight:
+                    [self.cancelButton, self.shutterButton].forEach {
+                        $0.transform = CGAffineTransform(rotationAngle: .pi / 2)
+                    }
+                    self.overlayView.alpha = 0
+                default:
+                    [self.cancelButton, self.shutterButton].forEach {
+                        $0.transform = .identity
+                    }
+                    self.overlayView.alpha = 1
                 }
-                self.overlayView.alpha = 0
-            case .landscapeRight:
-                [self.cancelButton, self.shutterButton].forEach {
-                    $0.transform = CGAffineTransform(rotationAngle: .pi / 2)
-                }
-                self.overlayView.alpha = 0
-            default:
-                [self.cancelButton, self.shutterButton].forEach {
-                    $0.transform = .identity
-                }
-                self.overlayView.alpha = 1
             }
         }
     }
