@@ -27,8 +27,7 @@ open class LHCameraViewController: UIViewController {
     @IBOutlet private weak var overlayView: UIView!
     @IBOutlet private weak var imageView: UIImageView!
     private lazy var orientationDetector = LHDeviceOrientationDetector { $0.delegate = self }
-    @IBOutlet weak var cancelButton: UIButton!
-    @IBOutlet weak var shutterButton: UIButton!
+    @IBOutlet private var buttons: [UIButton]!
     private var orientation: UIInterfaceOrientation = .unknown
     
     
@@ -127,14 +126,14 @@ extension LHCameraViewController: AVCapturePhotoCaptureDelegate {
     open func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
 
         var metadata = photo.metadata
-        switch orientation {
-        case .landscapeLeft:
+        switch (orientation, previewView.cameraPosition) {
+        case (.landscapeLeft, .back), (.landscapeRight, .front):
             metadata["Orientation"] = 3
-        case .landscapeRight:
+        case (.landscapeRight, .back), (.landscapeLeft, .front):
             metadata["Orientation"] = 1
-        case .portrait:
+        case (.portrait, _):
             metadata["Orientation"] = 6
-        case .portraitUpsideDown:
+        case (.portraitUpsideDown, _):
             metadata["Orientation"] = 8
         default:
             break
@@ -180,17 +179,17 @@ extension LHCameraViewController: LHDeviceOrientationDetectorDelegate {
             UIView.animate(withDuration: 0.2) {
                 switch toOrientation {
                 case .landscapeLeft:
-                    [self.cancelButton, self.shutterButton].forEach {
+                    self.buttons.forEach {
                         $0.transform = CGAffineTransform(rotationAngle: .pi / -2)
                     }
                     self.overlayView.alpha = 0
                 case .landscapeRight:
-                    [self.cancelButton, self.shutterButton].forEach {
+                    self.buttons.forEach {
                         $0.transform = CGAffineTransform(rotationAngle: .pi / 2)
                     }
                     self.overlayView.alpha = 0
                 default:
-                    [self.cancelButton, self.shutterButton].forEach {
+                    self.buttons.forEach {
                         $0.transform = .identity
                     }
                     self.overlayView.alpha = 1
