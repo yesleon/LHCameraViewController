@@ -25,7 +25,7 @@
             <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="w1P-Bb-rwJ" customClass="PreviewView" customModule="LHCameraViewController" customModuleProvider="target">
+                <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="w1P-Bb-rwJ" customClass="PreviewView" customModule="LHCameraViewController" customModuleProvider="target">
                     <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </view>
@@ -69,14 +69,24 @@
                                 <action selector="didPressCancelButton:" destination="-1" eventType="touchUpInside" id="uhF-cp-0GA"/>
                             </connections>
                         </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YRJ-kn-LgJ">
+                            <rect key="frame" x="320" y="49" width="47" height="30"/>
+                            <state key="normal" title="Switch"/>
+                            <connections>
+                                <action selector="switchButtonDidPress:" destination="-1" eventType="touchUpInside" id="yc1-22-xV7"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstItem="Bla-dU-LQa" firstAttribute="leading" secondItem="Rww-Sc-FMr" secondAttribute="leadingMargin" id="08L-rW-n6u"/>
+                        <constraint firstItem="YRJ-kn-LgJ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="SSh-0L-Crt" secondAttribute="trailing" constant="8" symbolic="YES" id="1b9-mz-7kn"/>
+                        <constraint firstItem="YRJ-kn-LgJ" firstAttribute="trailing" secondItem="Rww-Sc-FMr" secondAttribute="trailingMargin" id="5hM-r9-ocx"/>
                         <constraint firstItem="SSh-0L-Crt" firstAttribute="centerY" secondItem="Rww-Sc-FMr" secondAttribute="centerY" id="G6g-rF-0QT"/>
                         <constraint firstItem="SSh-0L-Crt" firstAttribute="centerX" secondItem="Rww-Sc-FMr" secondAttribute="centerX" id="Lt9-nI-Zuu"/>
                         <constraint firstItem="Bla-dU-LQa" firstAttribute="centerY" secondItem="Rww-Sc-FMr" secondAttribute="centerY" id="UJS-5E-fyU"/>
                         <constraint firstAttribute="height" constant="128" id="gHK-u2-dqH"/>
+                        <constraint firstItem="YRJ-kn-LgJ" firstAttribute="centerY" secondItem="Rww-Sc-FMr" secondAttribute="centerY" id="sDZ-IB-yfh"/>
                     </constraints>
                 </view>
             </subviews>

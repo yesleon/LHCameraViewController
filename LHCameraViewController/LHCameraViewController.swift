@@ -26,11 +26,7 @@ open class LHCameraViewController: UIViewController {
     @IBOutlet private weak var previewView: PreviewView!
     @IBOutlet private weak var overlayView: UIView!
     @IBOutlet private weak var imageView: UIImageView!
-    private lazy var orientationDetector: LHDeviceOrientationDetector = {
-        let detector = LHDeviceOrientationDetector()
-        detector.delegate = self
-        return detector
-    }()
+    private lazy var orientationDetector = LHDeviceOrientationDetector { $0.delegate = self }
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var shutterButton: UIButton!
     private var orientation: UIInterfaceOrientation = .unknown
@@ -57,33 +53,37 @@ open class LHCameraViewController: UIViewController {
     override open func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        if let session = try? makeCaptureSession() {
-            previewView.session = session
-            session.startRunning()
+        do {
+            try previewView.startCapturing()
+        } catch {
+            print(error)
         }
-        previewView.videoPreviewLayer.videoGravity = .resizeAspectFill
-        previewView.clipsToBounds = true
-        if UIDevice.current.userInterfaceIdiom != .phone {
+        
+        switch UIDevice.current.userInterfaceIdiom {
+        case .phone:
+            orientationDetector.startDeviceOrientationUpdates()
+        case .pad:
             updateVideoOrientation()
             NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
-        } else {
-            orientationDetector.startDeviceOrientationUpdates()
+        default:
+            break
         }
     }
     
     deinit {
-        if UIDevice.current.userInterfaceIdiom == .phone {
+        switch UIDevice.current.userInterfaceIdiom {
+        case .phone:
             orientationDetector.stopDeviceOrientationUpdates()
-        } else {
+        case .pad:
             NotificationCenter.default.removeObserver(self)
+        default:
+            break
         }
     }
     
     private func updateVideoOrientation() {
-        let rawValue = UIDevice.current.orientation.rawValue
-        if rawValue >= 1, rawValue <= 4 {
-            previewView.connection?.videoOrientation = AVCaptureVideoOrientation(rawValue: rawValue)!
+        if let videoOrientation = AVCaptureVideoOrientation(UIDevice.current.orientation) {
+            previewView.setVideoOrientation(videoOrientation)
         }
     }
     
@@ -97,37 +97,27 @@ open class LHCameraViewController: UIViewController {
     }
     
     @IBAction private func didPressShutterButton(_ sender: UIButton) {
-        capturePhoto()
+        do {
+            try previewView.takePhoto(delegate: self)
+        } catch {
+            print(error)
+        }
         sender.isEnabled = false
     }
     
-    enum CaptureSessionError: Error {
-        case cantFindDevice, cantAddInput, cantAddOutput
-    }
-    
-    private func makeCaptureSession() throws -> AVCaptureSession {
-        let captureSession = AVCaptureSession()
-        captureSession.beginConfiguration()
-        
-        guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { throw CaptureSessionError.cantFindDevice }
-        let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-        guard captureSession.canAddInput(videoDeviceInput) else { throw CaptureSessionError.cantAddInput }
-        captureSession.addInput(videoDeviceInput)
-        
-        let photoOutput = AVCapturePhotoOutput()
-        guard captureSession.canAddOutput(photoOutput) else { throw CaptureSessionError.cantAddOutput }
-        captureSession.sessionPreset = .high
-        captureSession.addOutput(photoOutput)
-        
-        captureSession.commitConfiguration()
-        return captureSession
-    }
-    
-    private func capturePhoto() {
-        guard let session = previewView.session else { return }
-        guard let photoOutput = session.outputs.first as? AVCapturePhotoOutput else { return }
-        let settings = AVCapturePhotoSettings()
-        photoOutput.capturePhoto(with: settings, delegate: self)
+    @IBAction private func switchButtonDidPress(_ sender: UIButton) {
+        do {
+            switch previewView.cameraPosition {
+            case .back:
+                try previewView.setCameraPosition(.front)
+            case .front:
+                try previewView.setCameraPosition(.back)
+            case .unspecified:
+                fatalError()
+            }
+        } catch {
+            print(error)
+        }
     }
 
 }
@@ -137,19 +127,6 @@ extension LHCameraViewController: AVCapturePhotoCaptureDelegate {
     open func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
 
         var metadata = photo.metadata
-//
-//        let orientation: UIInterfaceOrientation
-//        if UIDevice.current.userInterfaceIdiom == .phone {
-//            orientation = orientationDetector.currentOrientation
-//
-//        } else {
-//            let rawValue = UIDevice.current.orientation.rawValue
-//            if rawValue >= 1, rawValue <= 4 {
-//                orientation = UIInterfaceOrientation(rawValue: rawValue)!
-//            } else {
-//                orientation = .unknown
-//            }
-//        }
         switch orientation {
         case .landscapeLeft:
             metadata["Orientation"] = 3
@@ -162,8 +139,6 @@ extension LHCameraViewController: AVCapturePhotoCaptureDelegate {
         default:
             break
         }
-        
-        
         
         guard let imageData = photo.fileDataRepresentation(withReplacementMetadata: metadata,
                                                            replacementEmbeddedThumbnailPhotoFormat: photo.embeddedThumbnailPhotoFormat,
