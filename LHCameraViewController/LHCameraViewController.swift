@@ -22,7 +22,11 @@ public extension LHCameraViewControllerDelegate {
 
 open class LHCameraViewController: UIViewController {
 
-    open weak var delegate: LHCameraViewControllerDelegate?
+    open weak var delegate: LHCameraViewControllerDelegate? {
+        willSet {
+            transitioningDelegate = newValue == nil ? nil : self
+        }
+    }
     @IBOutlet private weak var previewView: PreviewView!
     @IBOutlet private weak var overlayView: UIView!
     @IBOutlet private weak var imageView: UIImageView!
@@ -33,20 +37,6 @@ open class LHCameraViewController: UIViewController {
     
     override open var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
-    }
-    
-    private func initialize() {
-        transitioningDelegate = self
-    }
-    
-    public init() {
-        super.init(nibName: nil, bundle: Bundle.init(for: LHCameraViewController.self))
-        initialize()
-    }
-    
-    required public init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-        initialize()
     }
     
     override open func viewDidLoad() {
@@ -91,20 +81,20 @@ open class LHCameraViewController: UIViewController {
         orientation = UIInterfaceOrientation(rawValue: UIDevice.current.orientation.rawValue)!
     }
     
-    @IBAction private func didPressCancelButton(_ sender: UIButton) {
+    @IBAction private func cancelButtonWasPressed(_ sender: UIButton) {
         delegate?.cameraViewControllerDidCancel(self)
     }
     
-    @IBAction private func didPressShutterButton(_ sender: UIButton) {
+    @IBAction private func shutterButtonWasPressed(_ sender: UIButton) {
         do {
             try previewView.takePhoto(delegate: self)
+            sender.isEnabled = false
         } catch {
             print(error)
         }
-        sender.isEnabled = false
     }
     
-    @IBAction private func switchButtonDidPress(_ sender: UIButton) {
+    @IBAction private func switchButtonWasPressed(_ sender: UIButton) {
         do {
             switch previewView.cameraPosition {
             case .back:
@@ -175,25 +165,23 @@ extension LHCameraViewController: LHDeviceOrientationDetectorDelegate {
     
     func orientationDetector(_ detector: LHDeviceOrientationDetector, didDetectOrientationChangeFrom fromOrientation: UIInterfaceOrientation, toOrientation: UIInterfaceOrientation) {
         orientation = toOrientation
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            UIView.animate(withDuration: 0.2) {
-                switch toOrientation {
-                case .landscapeLeft:
-                    self.buttons.forEach {
-                        $0.transform = CGAffineTransform(rotationAngle: .pi / -2)
-                    }
-                    self.overlayView.alpha = 0
-                case .landscapeRight:
-                    self.buttons.forEach {
-                        $0.transform = CGAffineTransform(rotationAngle: .pi / 2)
-                    }
-                    self.overlayView.alpha = 0
-                default:
-                    self.buttons.forEach {
-                        $0.transform = .identity
-                    }
-                    self.overlayView.alpha = 1
+        UIView.animate(withDuration: 0.2) {
+            switch toOrientation {
+            case .landscapeLeft:
+                self.buttons.forEach {
+                    $0.transform = CGAffineTransform(rotationAngle: .pi / -2)
                 }
+                self.overlayView.alpha = 0
+            case .landscapeRight:
+                self.buttons.forEach {
+                    $0.transform = CGAffineTransform(rotationAngle: .pi / 2)
+                }
+                self.overlayView.alpha = 0
+            default:
+                self.buttons.forEach {
+                    $0.transform = .identity
+                }
+                self.overlayView.alpha = 1
             }
         }
     }
