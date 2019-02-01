@@ -24,10 +24,6 @@ class PreviewView: UIView {
         return layer as! AVCaptureVideoPreviewLayer
     }
     
-//    var connection: AVCaptureConnection? {
-//        return videoPreviewLayer.connection
-//    }
-    
     var cameraPosition: AVCaptureDevice.Position {
         guard let input = videoPreviewLayer.session?.inputs.first as? AVCaptureDeviceInput else { return .unspecified }
         return input.device.position
@@ -48,14 +44,14 @@ class PreviewView: UIView {
     }
     
     func startCapturing() throws {
-        videoPreviewLayer.session = try AVCaptureSession() {
-            $0.sessionPreset = .high
-            try $0.configure {
-                try $0.setInputVideoDevice(try .defaultCamera(position: .back))
-                try $0.setOutput(AVCapturePhotoOutput())
-            }
-            $0.startRunning()
-        }
+        let session = AVCaptureSession()
+        
+        session.sessionPreset = .high
+        try session.setInputVideoDevice(try .defaultCamera(position: .back))
+        try session.setOutput(AVCapturePhotoOutput())
+        videoPreviewLayer.session = session
+        session.startRunning()
+        
         
         videoPreviewLayer.videoGravity = .resizeAspectFill
     }

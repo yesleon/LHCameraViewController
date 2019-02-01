@@ -22,21 +22,30 @@ public extension LHCameraViewControllerDelegate {
 
 open class LHCameraViewController: UIViewController {
 
-    open weak var delegate: LHCameraViewControllerDelegate? {
-        willSet {
-            transitioningDelegate = newValue == nil ? nil : self
-        }
-    }
+    open weak var delegate: LHCameraViewControllerDelegate? 
     @IBOutlet private weak var previewView: PreviewView!
     @IBOutlet private weak var overlayView: UIView!
     @IBOutlet private weak var imageView: UIImageView!
-    private lazy var orientationDetector = LHDeviceOrientationDetector { $0.delegate = self }
+    private lazy var orientationDetector: LHDeviceOrientationDetector = {
+        let detector = LHDeviceOrientationDetector()
+        detector.delegate = self
+        return detector
+    }()
     @IBOutlet private var buttons: [UIButton]!
     private var orientation: UIInterfaceOrientation = .unknown
     
     
     override open var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
+    }
+    
+    public init() {
+        super.init(nibName: nil, bundle: Bundle(identifier: "com.narrativesaw.LHCameraViewController"))
+        transitioningDelegate = self
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
     }
     
     override open func viewDidLoad() {
