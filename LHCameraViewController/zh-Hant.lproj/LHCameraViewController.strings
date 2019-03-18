@@ -4,3 +4,6 @@
 /* Class = "UIButton"; normalTitle = "Take Picture"; ObjectID = "SSh-0L-Crt"; */
 "SSh-0L-Crt.normalTitle" = "拍攝照片";
 
+/* Class = "UIButton"; normalTitle = "Switch"; ObjectID = "YRJ-kn-LgJ"; */
+"YRJ-kn-LgJ.normalTitle" = "切換";
+
