@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		710F8D0E2183051400E4C022 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 710F8D0D2183051400E4C022 /* README.md */; };
 		7121AA9A219042180094CB2C /* LHZoomTransitionKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7121AA99219042180094CB2C /* LHZoomTransitionKit.framework */; };
-		714673BA223FA7E3000C7675 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 714673B9223FA7E3000C7675 /* Info.plist */; };
 		716FF04F2182BE3B000FB60F /* LHCameraViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 716FF04D2182BE3B000FB60F /* LHCameraViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		716FF0622182BE63000FB60F /* LHCameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 716FF0602182BE62000FB60F /* LHCameraViewController.swift */; };
 		716FF0682182BEEE000FB60F /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 716FF0672182BEEE000FB60F /* PreviewView.swift */; };
@@ -153,7 +152,6 @@
 			files = (
 				710F8D0E2183051400E4C022 /* README.md in Resources */,
 				71A07B052186F1270020666B /* LHCameraViewController.xib in Resources */,
-				714673BA223FA7E3000C7675 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
